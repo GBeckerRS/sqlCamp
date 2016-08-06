@@ -1,0 +1,22 @@
+-- CRIANDO UMA FUNCTION --
+
+CREATE OR REPLACE FUNCTION ConsultaFreteEmpresa
+(
+p_codEmpresa IN GEEMPRES.Cd_empresa%type
+)
+return FLOAT
+
+IS
+
+v_vl_frete GEEMPRES.Usrempr5%type;
+
+BEGIN
+
+SELECT usrempr5
+INTO  v_vl_frete
+FROM GEEMPRES
+WHERE cd_empresa = p_codEmpresa;
+
+RETURN (v_vl_frete);
+END ConsultaFreteEmpresa;
+

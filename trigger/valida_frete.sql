@@ -1,0 +1,15 @@
+CREATE OR REPLACE TRIGGER valida_frete
+AFTER UPDATE
+ON GEEMPRES
+FOR EACH ROW
+
+DECLARE
+BEGIN
+
+IF :OLD.usrempr5 > :NEW.usrempr5 THEN
+   RAISE_APPLICATION_ERROR (-20001,'Não é permitido diminuir o valor do frete.');
+   ROLLBACK;
+END IF;
+
+END;
+

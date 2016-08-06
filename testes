@@ -1,0 +1,78 @@
+create or replace trigger CGTR_valida_horario
+before insert or update or delete
+on geempres
+declare
+   v_horario number;
+  begin
+
+   v_horario := to_number(to_char(sysdate,'HH24'));
+   IF V_HORARIO NOT BETWEEN 8 AND 18 THEN
+   if(inserting)then
+   RAISE_APPLICATION_ERROR(-2000,' O cadastro de empresas não é permitido fora de horário comercial.');
+   rollback;
+   elsif(updating)THEN
+      RAISE_APPLICATION_ERROR(-3000,' A alteração de cadastro de empresas não é permitido fora de horário comercial.');
+   rollback;
+   else
+      RAISE_APPLICATION_ERROR(-4000,' A exclusão de, cadastro de empresas não é permitido fora de horário comercial.');  
+   end if;
+   end if;
+end;
+
+
+
+
+________________________________
+
+
+
+CREATE OR REPLACE PROCEDURE ATUALIZAFRETEMOV (
+       p_empresa GEEMPRES.CD_EMPRESA%TYPE) 
+      IS
+       VL_FRETE GEEMPRES.USREMPR5%TYPE;
+       BEGIN
+
+       UPDATE ESMOVIME M
+       SET VL_FRETE = CGFC_RECEBEFRETE(TRIM(CD_EMPRESA),TRIM(CD_MATERIAL))
+       WHERE M.CD_EMPRESA = P_EMPRESA;
+             COMMIT;
+             
+END ATUALIZAFRETEMOV;
+
+
+
+
+____________________________________________________--
+
+
+
+CREATE OR REPLACE FUNCTION CGFC_RECEBEFRETE
+ (F_CODEMPRESA IN GEEMPRES.CD_EMPRESA%TYPE,
+ E_CODMATERIAL IN ESMATERI.CD_MATERIAL%TYPE)
+  RETURN VARCHAR
+ IS
+        VL_FRETE GEEMPRES.USREMPR5%TYPE;
+        FRETE_PESO ESMATERI.PESO%TYPE;
+        P_FRETE ESMATERI.PE_FRETE%TYPE;
+    BEGIN
+        SELECT G.USREMPR5
+        INTO VL_FRETE 
+        FROM GEEMPRES G
+        WHERE CD_EMPRESA = F_CODEMPRESA;
+        
+        SELECT E.PESO,E.PE_FRETE
+        INTO FRETE_PESO,P_FRETE
+        FROM ESMATERI E
+        WHERE E.CD_MATERIAL = E_CODMATERIAL;
+             
+             
+RETURN ((VL_FRETE*FRETE_PESO)+((VL_FRETE*FRETE_PESO)+ P_FRETE/100));
+
+ END CGFC_RECEBEFRETE;
+
+
+
+
+
+
+
